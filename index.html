@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advent Calendar</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+
+    body {
+      font-family: 'Pacifico', cursive;
+      text-align: center;
+      background: url('https://img.freepik.com/free-vector/watercolor-christmas-tinsel-background_79603-2307.jpg') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      padding: 20px;
+      color: #0b0a54;
+    }
+
+    h1 {
+      font-family: 'Pacifico', cursive;
+      margin-bottom: 20px;
+      font-size: 2rem;
+    }
+
+    .calendar-container {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 15px;
+      max-width: 650px;
+      margin: auto;
+    }
+
+    .box {
+      background-color: #d32f2f;
+      color: white;
+      border: 2px solid #fff;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 120px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      position: relative;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .box:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(255, 255, 255, 0.7);
+    }
+
+    .box.opened {
+      background-color: #4caf50;
+    }
+
+    .box.locked {
+      background-color: #b0bec5;
+      cursor: not-allowed;
+    }
+
+    .box .candle {
+      position: absolute;
+      bottom: 0px;
+      right: 10px;
+      width: 30px;
+      height: 48px;
+      background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQWbMhB3cqOdB7Z_dxhLdXCL5KW4rCdGngvw&s') no-repeat center center;
+      background-size: contain;
+    }
+
+    @keyframes pop {
+      0% {
+        transform: scale(0.5);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.2) translateY(-20px);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1) translateY(-40px);
+        opacity: 0;
+      }
+    }
+
+    .hearts {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .hearts span {
+      width: 15px;
+      height: 15px;
+      background-color: pink;
+      border-radius: 50%;
+      animation: pop 10s ease-in-out forwards;
+    }
+
+    .hearts span:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .hearts span:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .hearts span:nth-child(3) {
+      animation-delay: 0.2s;
+    }
+
+    .youtube-container {
+      margin: 20px auto;
+      max-width: 650px;
+    }
+
+    .youtube-container iframe {
+      width: 100%;
+      height: 100px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Advent Calendar for Mai's Bach</h1>
+  <div class="youtube-container">
+    <iframe 
+      src="https://www.youtube.com/embed/wNpwKJtOJ_Y?autoplay=0&loop=1&playlist=wNpwKJtOJ_Y" 
+      title="YouTube video player" 
+      frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen>
+    </iframe>
+  </div>
+  <div class="calendar-container" id="calendar"></div>
+
+  <script>
+    const messages = [
+     "Hôm nay là ngày đầu tiên của Mùa Vọng, tớ biết người yêu sẽ không thắp nến đâu, nên tớ sẽ thắp nến và gửi hơi ấm tới cậu :>. Gửi cậu 1 bài hát nè: https://www.youtube.com/watch?v=iO_1ArVDUtg",
+      "Cảm ơn cậu đã luôn yêu thương tớ và cố gắng vì chuyện chúng mình! Còn đây là bài hát của hôm nay: ",
+      "Cảm ơn cậu vì đã khiến tớ nhận ra, tớ có thể yêu một người nhiều như vậy :>",
+      "Người yêu của tớ giữ ấm, đừng để bị ốm nha!",
+      "Chỉ cần nhìn thấy cậu, nghe thấy giọng cậu, là tớ thấy bình yên :>",
+      "Có lẽ vì cậu biết tớ nhớ cậu mỗi ngày nên nói điều đó ra không còn nhiều ý nghĩa, nhưng thực sự tớ rất nhớ cậu... Tư nhiên nhớ ra bài hát này nè: https://www.youtube.com/watch?v=yb893qm8QOo",
+      "Cậu có tin một người có thể yêu một người nhiều hơn mỗi ngày mà chẳng vì lý do gì không?",
+      "Hôm nay là ngày thứ hai của Mùa Vọng, tớ sẽ thắp nến và ước mình sớm được ở gần bên nhau. Chỉ một ngọn nến mà đòi như thế thì có hơi tham lam quá không nhỉ?",
+      "Đây là 1 món quà thực sự nè: Cậu có thể đưa ra 1 yêu cầu bất kỳ và tớ sẽ thực hiện dù điều đó là gì. Cái này có giá trị 1 lần thui nhaa :>",
+      "Tớ luôn trân trọng từng phút cậu dành cho tớ. Đối với tớ, mỗi phút cậu dành cho tớ là một lần cậu nói lời yêu <3. Có 1 bài hát thường làm tớ nghĩ tới cậu nè: https://www.youtube.com/watch?v=MwSL-57pNqM",
+      "Cảm ơn cậu vì luôn kiên nhẫn với tớ. Tớ biết tính tớ có lúc trẻ con, nhưng tớ thấy hạnh phúc vì ở bên cậu, tớ không cần gồng mình làm người lớn. Bọn mình có thể là người lớn khi đi làm, và trở về làm hai đứa trẻ yêu nhau được không? (Trừ những lúc 18+ :>)",
+      "Tớ muốn ôm cậu quá, vòng tay qua cổ và hôn lên má cậu <3",
+      "Nếu có thể quay ngược thời gian, tớ muốn trở lại thời đại học, đi tìm cậu và yêu cậu từ lúc đó, để mình có nhiều thời gian bên nhau hơn...",
+      "Tớ rất thích nhìn cậu tập trung làm việc, cũng không biết là tại sao...",
+      "Hôm nay là ngày thứ ba của Mùa Vọng, Giáng sinh đã đến rất gần rùi. Ước gì mình đang ở gần nhau, cùng nhau đi chợ Giáng sinh và mua mấy đồ lặt vặt về trang trí (biết là cậu không thích rùi, cơ mà chiều tớ 1 chút được hông?",
+      "Cậu có thể kể 3 điều cậu thích ở tớ không? Cậu thường phàn nàn về những tính xấu của tớ, nhưng chẳng bao giờ nói về những điều cậu thích ở tớ cả",
+      "Cậu đã khiến năm 2024 của tớ trở thành đặc biệt, tớ yêu cậu rất nhiều!",
+      "Cậu biết không, tớ thấy hạnh phúc nhất mỗi khi cậu nhìn tớ và cười <3",
+      "Mọi người khi nghe tớ kể về cậu đều nói tớ thật may mắn. Có bao giờ cậu cảm thấy may mắn vì gặp tớ chưa? Dù mình không bắt đầu từ tình bạn, nhưng nghe bài này tớ vẫn nghĩ tới cậu nè https://www.youtube.com/watch?v=acvIVA9-FMQ",
+      "Tớ mong rằng mình sẽ ở bên nhau thật lâu, sẽ có lúc vui, sẽ có lúc buồn, nhưng lúc nào cũng muốn có nhau...",
+      "Tớ cảm thấy rất may mắn vì được gặp, yêu và được yêu bởi một người kiên nhẫn, chăm chỉ, tốt bụng và thông minh là cậu <3. Tự nhiên nhớ ra bài này nè https://www.youtube.com/watch?v=GCWl50HQZIM",
+      "Hôm nay là ngày thứ tư của Mùa Vọng, sắp tới Giáng sinh rùi đó, người yêu dù nhiều việc cũng nhớ sắp xếp thời gian nghỉ ngơi nha. Làm việc nhiều quá trong mùa lễ, đến lúc giật mình nhận ra, sẽ thấy thương mình lắm...",
+      "Người yêu ơi, tớ muốn nói yêu cậu mỗi ngày cho đến mãi về sau <3, giống như này nè https://www.youtube.com/watch?v=rtOvBOTyX00",
+      "Đêm nay là đêm Giáng sinh nè. Cậu là món quà đối với tớ rùi, cơ mà tớ có phải món quà đối với cậu không? Hôm nay cậu đã nghe Silent Night chưa? https://www.youtube.com/watch?v=nEH7_2c644Q"
+    ];
+
+    const today = new Date().getDate();
+
+    function createCalendar() {
+      const calendar = document.getElementById("calendar");
+
+      for (let i = 1; i <= 24; i++) {
+        const box = document.createElement("div");
+        box.classList.add("box");
+        box.textContent = `Day ${i}`;
+
+        if ([1, 8, 15, 22].includes(i)) {
+          const candle = document.createElement("div");
+          candle.classList.add("candle");
+          box.appendChild(candle);
+        }
+
+        if (localStorage.getItem(`day${i}`) === "opened") {
+          box.classList.add("opened");
+          box.addEventListener("click", () => openBox(i, box, true));
+        } else if (i > today) {
+          box.classList.add("locked");
+        } else {
+          box.addEventListener("click", () => openBox(i, box, false));
+        }
+
+        calendar.appendChild(box);
+      }
+    }
+
+    function openBox(day, box, isReopened) {
+      if (box.classList.contains("locked")) return;
+
+      alert(messages[day - 1]);
+
+      if (!isReopened) {
+        const hearts = document.createElement("div");
+        hearts.classList.add("hearts");
+        hearts.innerHTML = `
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        `;
+        box.appendChild(hearts);
+
+        setTimeout(() => hearts.remove(), 1500);
+
+        box.classList.add("opened");
+        localStorage.setItem(`day${day}`, "opened");
+      }
+    }
+
+    createCalendar();
+  </script>
+</body>
+</html>
